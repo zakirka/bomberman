@@ -10,5 +10,6 @@ public class Main {
             LauncherFrame frame = new LauncherFrame();
             frame.setVisible(true);
         });
+
     }
 }
