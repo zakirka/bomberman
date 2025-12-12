@@ -332,7 +332,9 @@ public class GameServer {
                 if (y < height - 1) mapBuilder.append(",");
             }
             out.println("WELCOME|" + playerId + "|" + width + "|" + height + "|" + mapBuilder);
+            out.flush();
             out.println("START");
+            out.flush();
         }
 
         void sendInitialState() {
@@ -359,6 +361,7 @@ public class GameServer {
 
         void send(String packet) {
             out.println(packet);
+            out.flush();
         }
 
         void disconnect() {
