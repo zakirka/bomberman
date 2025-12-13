@@ -37,7 +37,7 @@ public class GameServer {
     private final ScheduledExecutorService loop = Executors.newSingleThreadScheduledExecutor();
     private volatile boolean running;
     private ServerSocket serverSocket;
-    private char[][] grid;
+    private final char[][] grid;
     private long tick;
     private volatile boolean gameOver;
     private volatile Integer winnerId;
@@ -191,7 +191,7 @@ public class GameServer {
         }
         if (alive.size() == 1) {
             gameOver = true;
-            Player winner = alive.get(0);
+            Player winner = alive.getFirst();
             winnerId = winner.id();
             winnerName = winner.name();
             for (ClientHandler h : handlers.values()) {
