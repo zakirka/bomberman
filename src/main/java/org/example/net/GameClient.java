@@ -5,6 +5,7 @@ import org.example.model.Explosion;
 import org.example.model.GameState;
 import org.example.model.Player;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,6 +36,9 @@ public class GameClient {
     private boolean right;
     private boolean bomb;
     private final Timer inputTimer = new Timer(true);
+    private final List<Thread> threads = new ArrayList<>();
+    private volatile boolean connected = false;
+
 
     public GameClient(String host, int port, String name) {
         this.host = host;
@@ -48,6 +52,7 @@ public class GameClient {
         reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
         writer.println("HELLO|" + name);
         running = true;
+        connected = true;
         startReader();
         inputTimer.scheduleAtFixedRate(new TimerTask() {
             @Override
@@ -65,6 +70,15 @@ public class GameClient {
                     handleLine(line);
                 }
             } catch (IOException e) {
+                if (connected) {
+                    SwingUtilities.invokeLater(() -> {
+                        JOptionPane.showMessageDialog(null,
+                                "Соединение с сервером разорвано",
+                                "Ошибка соединения",
+                                JOptionPane.ERROR_MESSAGE);
+                    });
+                }
+            } finally {
                 close();
             }
         });
@@ -180,9 +194,19 @@ public class GameClient {
 
     public void close() {
         running = false;
+        connected = false;
         inputTimer.cancel();
+
+        for (Thread thread : threads) {
+            if (thread.isAlive()) {
+                thread.interrupt();
+            }
+        }
+
         try {
-            if (socket != null) socket.close();
+            if (writer != null) writer.close();
+            if (reader != null) reader.close();
+            if (socket != null && !socket.isClosed()) socket.close();
         } catch (IOException ignored) {
         }
     }
