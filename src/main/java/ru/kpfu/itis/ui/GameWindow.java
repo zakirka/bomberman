@@ -1,6 +1,6 @@
-package org.example.ui;
+package ru.kpfu.itis.ui;
 
-import org.example.net.GameClient;
+import ru.kpfu.itis.net.GameClient;
 
 import javax.swing.JFrame;
 import java.awt.BorderLayout;

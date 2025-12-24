@@ -1,4 +1,4 @@
-package org.example.model;
+package ru.kpfu.itis.model;
 
 public record Bomb(int ownerId, int x, int y, int timer) {
     public Bomb tick() {

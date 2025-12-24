@@ -1,4 +1,4 @@
-package org.example.model;
+package ru.kpfu.itis.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;

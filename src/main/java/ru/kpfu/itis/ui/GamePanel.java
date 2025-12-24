@@ -1,8 +1,8 @@
-package org.example.ui;
+package ru.kpfu.itis.ui;
 
-import org.example.model.GameState;
-import org.example.model.Player;
-import org.example.net.GameClient;
+import ru.kpfu.itis.model.GameState;
+import ru.kpfu.itis.model.Player;
+import ru.kpfu.itis.net.GameClient;
 
 import javax.swing.JPanel;
 import javax.swing.Timer;

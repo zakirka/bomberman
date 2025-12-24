@@ -1,4 +1,4 @@
-package org.example.model;
+package ru.kpfu.itis.model;
 
 public record InputState(boolean up, boolean down, boolean left, boolean right, boolean bomb) {
     public static InputState empty() {

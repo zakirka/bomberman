@@ -1,6 +1,6 @@
-package org.example;
+package ru.kpfu.itis;
 
-import org.example.ui.LauncherFrame;
+import ru.kpfu.itis.ui.LauncherFrame;
 
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;

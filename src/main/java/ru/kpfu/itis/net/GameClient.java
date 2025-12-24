@@ -1,9 +1,9 @@
-package org.example.net;
+package ru.kpfu.itis.net;
 
-import org.example.model.Bomb;
-import org.example.model.Explosion;
-import org.example.model.GameState;
-import org.example.model.Player;
+import ru.kpfu.itis.model.Bomb;
+import ru.kpfu.itis.model.Explosion;
+import ru.kpfu.itis.model.GameState;
+import ru.kpfu.itis.model.Player;
 
 import javax.swing.*;
 import java.io.BufferedReader;

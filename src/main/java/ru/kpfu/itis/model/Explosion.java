@@ -1,4 +1,4 @@
-package org.example.model;
+package ru.kpfu.itis.model;
 
 public record Explosion(int x, int y, int ttl) {
     public Explosion tick() {

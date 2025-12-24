@@ -1,7 +1,7 @@
-package org.example.ui;
+package ru.kpfu.itis.ui;
 
-import org.example.net.GameClient;
-import org.example.net.GameServer;
+import ru.kpfu.itis.net.GameClient;
+import ru.kpfu.itis.net.GameServer;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
