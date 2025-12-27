@@ -231,9 +231,6 @@ public class GamePanel extends JPanel {
         if (tileSize > 30) {
             g2.setFont(new Font("Arial", Font.PLAIN, Math.max(10, tileSize/5)));
             g2.setColor(new Color(255, 255, 255, 150));
-            String controls = "Управление: WASD/Стрелки - движение, Пробел - бомба";
-            int controlsWidth = g2.getFontMetrics().stringWidth(controls);
-            g2.drawString(controls, offsetX + (gameWidth - controlsWidth)/2, infoY - 10);
         }
     }
 
