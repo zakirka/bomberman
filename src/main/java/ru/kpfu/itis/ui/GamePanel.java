@@ -55,13 +55,13 @@ public class GamePanel extends JPanel {
         int panelHeight = getHeight();
 
         int maxTileWidth = (panelWidth - 40) / state.width();
-        int maxTileHeight = (panelHeight - 60) / (state.height() + 1); // +1 для панели информации
+        int maxTileHeight = (panelHeight - 60) / (state.height() + 1);
 
         tileSize = Math.min(maxTileWidth, maxTileHeight);
-        tileSize = Math.max(16, Math.min(64, tileSize)); // Ограничиваем min/max размер
+        tileSize = Math.max(16, Math.min(64, tileSize));
 
         gameWidth = state.width() * tileSize;
-        gameHeight = (state.height() * tileSize) + 40; // + панель информации
+        gameHeight = (state.height() * tileSize) + 40;
 
         offsetX = (panelWidth - gameWidth) / 2;
         offsetY = (panelHeight - gameHeight) / 2;
