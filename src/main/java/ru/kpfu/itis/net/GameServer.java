@@ -4,6 +4,8 @@ import ru.kpfu.itis.model.Bomb;
 import ru.kpfu.itis.model.Explosion;
 import ru.kpfu.itis.model.InputState;
 import ru.kpfu.itis.model.Player;
+import ru.kpfu.itis.net.Protocol;
+import ru.kpfu.itis.net.message.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,6 +15,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -195,39 +198,38 @@ public class GameServer {
             winnerId = winner.id();
             winnerName = winner.name();
             for (ClientHandler h : handlers.values()) {
-                h.send("GAME_OVER|" + winnerId + "|" + winnerName);
+                GameOverMessage gameOverMsg = new GameOverMessage(winnerId, winnerName);
+                h.send(gameOverMsg.serialize());
             }
         } else if (alive.isEmpty()) {
             gameOver = true;
             for (ClientHandler h : handlers.values()) {
-                h.send("GAME_OVER|0|DRAW");
+                GameOverMessage gameOverMsg = new GameOverMessage(0, "DRAW");
+                h.send(gameOverMsg.serialize());
             }
         }
     }
 
     private void broadcastState() {
         if (gameOver) return;
-        StringBuilder sb = new StringBuilder();
-        sb.append("STATE|").append(tick);
-        for (Player p : players.values()) {
-            sb.append("|P,").append(p.id()).append(",").append(p.x()).append(",").append(p.y())
-                    .append(",").append(p.alive()).append(",").append(p.bombsAvailable()).append(",").append(p.name());
-        }
-        synchronized (bombs) {
-            for (Bomb b : bombs) {
-                sb.append("|B,").append(b.ownerId()).append(",").append(b.x()).append(",").append(b.y()).append(",").append(b.timer());
-            }
-        }
-        synchronized (explosions) {
-            for (Explosion e : explosions) {
-                sb.append("|F,").append(e.x()).append(",").append(e.y()).append(",").append(e.ttl());
-            }
-        }
-        sb.append("|M,").append(encodeGrid());
-        String packet = sb.toString();
+        StateMessage stateMsg = createStateMessage();
+        String packet = stateMsg.serialize();
         for (ClientHandler h : handlers.values()) {
             h.send(packet);
         }
+    }
+
+    private StateMessage createStateMessage() {
+        Map<Integer, Player> playersMap = new HashMap<>(players);
+        List<Bomb> bombsList;
+        List<Explosion> explosionsList;
+        synchronized (bombs) {
+            bombsList = new ArrayList<>(bombs);
+        }
+        synchronized (explosions) {
+            explosionsList = new ArrayList<>(explosions);
+        }
+        return new StateMessage(tick, playersMap, bombsList, explosionsList, encodeGrid());
     }
 
     private char[][] generateMap() {
@@ -265,7 +267,7 @@ public class GameServer {
         StringBuilder sb = new StringBuilder();
         for (int y = 0; y < height; y++) {
             sb.append(new String(grid[y]));
-            if (y < height - 1) sb.append("/");
+            if (y < height - 1) sb.append(Protocol.getGridRowDelimiter());
         }
         return sb.toString();
     }
@@ -292,10 +294,10 @@ public class GameServer {
             try {
                 String line = in.readLine();
                 if (line == null) return;
-                if (line.startsWith("HELLO")) {
-                    String name = line.split("\\|")[1];
+                Message message = Protocol.parse(line);
+                if (message instanceof HelloMessage hello) {
                     playerId = idGen.getAndIncrement();
-                    players.put(playerId, new Player(playerId, name, spawnX(playerId), spawnY(playerId), true, 2));
+                    players.put(playerId, new Player(playerId, hello.name(), spawnX(playerId), spawnY(playerId), true, 2));
                     inputs.put(playerId, InputState.empty());
                     handlers.put(playerId, this);
                     sendWelcome();
@@ -311,17 +313,10 @@ public class GameServer {
         }
 
         void handle(String line) {
-            String[] p = line.split("\\|");
-            if (p.length < 2) return;
-            if ("INPUT".equals(p[0])) {
-                int id = Integer.parseInt(p[1]);
-                if (!players.containsKey(id)) return;
-                boolean up = Boolean.parseBoolean(p[2]);
-                boolean down = Boolean.parseBoolean(p[3]);
-                boolean left = Boolean.parseBoolean(p[4]);
-                boolean right = Boolean.parseBoolean(p[5]);
-                boolean bomb = Boolean.parseBoolean(p[6]);
-                inputs.put(id, new InputState(up, down, left, right, bomb));
+            Message message = Protocol.parse(line);
+            if (message instanceof InputMessage input) {
+                if (!players.containsKey(input.playerId())) return;
+                inputs.put(input.playerId(), new InputState(input.up(), input.down(), input.left(), input.right(), input.bomb()));
             }
         }
 
@@ -331,32 +326,18 @@ public class GameServer {
                 mapBuilder.append(new String(grid[y]));
                 if (y < height - 1) mapBuilder.append(",");
             }
-            out.println("WELCOME|" + playerId + "|" + width + "|" + height + "|" + mapBuilder);
+            WelcomeMessage welcome = new WelcomeMessage(playerId, width, height, mapBuilder.toString());
+            out.println(welcome.serialize());
             out.flush();
-            out.println("START");
+            StartMessage start = new StartMessage();
+            out.println(start.serialize());
             out.flush();
         }
 
         void sendInitialState() {
             if (gameOver) return;
-            StringBuilder sb = new StringBuilder();
-            sb.append("STATE|").append(tick);
-            for (Player p : players.values()) {
-                sb.append("|P,").append(p.id()).append(",").append(p.x()).append(",").append(p.y())
-                        .append(",").append(p.alive()).append(",").append(p.bombsAvailable()).append(",").append(p.name());
-            }
-            synchronized (bombs) {
-                for (Bomb b : bombs) {
-                    sb.append("|B,").append(b.ownerId()).append(",").append(b.x()).append(",").append(b.y()).append(",").append(b.timer());
-                }
-            }
-            synchronized (explosions) {
-                for (Explosion e : explosions) {
-                    sb.append("|F,").append(e.x()).append(",").append(e.y()).append(",").append(e.ttl());
-                }
-            }
-            sb.append("|M,").append(encodeGrid());
-            send(sb.toString());
+            StateMessage stateMsg = createStateMessage();
+            send(stateMsg.serialize());
         }
 
         void send(String packet) {
