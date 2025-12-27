@@ -22,7 +22,7 @@ import java.util.Map;
 public class GamePanel extends JPanel {
     private final GameClient client;
     private final Timer repaintTimer;
-    private volatile boolean connectionLost = false;
+    private final boolean connectionLost = false;
     private int tileSize = 48;
     private int offsetX = 0;
     private int offsetY = 0;
@@ -43,7 +43,7 @@ public class GamePanel extends JPanel {
         });
 
         addKeyListener(new KeyHandler());
-        repaintTimer = new Timer(30, e -> repaint());
+        repaintTimer = new Timer(30, e  -> repaint());
         repaintTimer.start();
     }
 
