@@ -23,7 +23,7 @@ public class GamePanel extends JPanel {
     private final GameClient client;
     private final Timer repaintTimer;
     private volatile boolean connectionLost = false;
-    private int tileSize = 48; // Начальный размер тайла
+    private int tileSize = 48;
     private int offsetX = 0;
     private int offsetY = 0;
     private int gameWidth = 0;
